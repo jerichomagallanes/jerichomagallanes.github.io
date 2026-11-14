@@ -10,7 +10,7 @@ not after any one app, and every app I publish lives underneath it.
 | `/` | this repo | the developer index: one card per app |
 | `/app-ads.txt` | this repo | the AdMob authorised-seller record |
 | `/assets/` | this repo | each app's logo for its card |
-| `/Trainr/` | the `Trainr` repo, `/docs` | Trainr's page, privacy policy, terms |
+| `/Trainr/` | this repo, `Trainr/` | Trainr's landing page, privacy policy, terms (see `Trainr/README.md`); it moved here when the app repo became `Trainr-Android`, because GitHub Pages does not redirect a renamed project site and the address is baked into the apps and both store listings |
 
 ## Why this repo has to exist
 
