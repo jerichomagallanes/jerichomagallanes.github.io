@@ -144,10 +144,12 @@ Apple's agreement wins for App Store copies.
 ## Changes
 
 If these terms change, the date at the top changes with them, and the history is
-public in this repository. Continuing to use the app after a change means you
+public on GitHub. Continuing to use the app after a change means you
 accept the new terms.
 
 ## Contact
 
-Questions about these terms can be raised as an issue on the project:
-https://github.com/jerichomagallanes/Trainr/issues
+Questions about these terms can be raised as an issue on either project:
+
+- Android: https://github.com/jerichomagallanes/Trainr-Android/issues
+- iOS: https://github.com/jerichomagallanes/Trainr-iOS/issues

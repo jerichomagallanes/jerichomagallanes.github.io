@@ -166,9 +166,11 @@ advice. Check with a doctor before you start, and stop if something hurts.
 ## Changes
 
 If this policy changes, the date at the top changes with it, and the history is
-public in this repository.
+public on GitHub.
 
 ## Contact
 
-Questions about this policy can be raised as an issue on the project:
-https://github.com/jerichomagallanes/Trainr/issues
+Questions about this policy can be raised as an issue on either project:
+
+- Android: https://github.com/jerichomagallanes/Trainr-Android/issues
+- iOS: https://github.com/jerichomagallanes/Trainr-iOS/issues
