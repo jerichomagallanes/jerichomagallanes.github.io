@@ -8,6 +8,7 @@
 <meta property="og:title" content="Trainr: Workout Planner">
 <meta property="og:description" content="A workout planner that builds your week on your phone.">
 <meta property="og:image" content="https://jerichomagallanes.github.io/Trainr/assets/og.png">
+<script>document.documentElement.classList.add("js")</script>
 <link rel="icon" href="assets/icon-180.png">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <style>
@@ -18,7 +19,9 @@
     color-scheme: dark;
     --page: #101519; --card: #20282E; --sunken: #2C363D; --rim: #3A454D; --edge: #82979F;
     --ink: #F5F7F8; --muted: #A8B5BF; --orange: #D37200; --orange-ink: #E8963A; --orange-deep: #B86300;
+    --ease: cubic-bezier(.22,.61,.36,1); --ease-out: cubic-bezier(.16,1,.3,1);
   }
+  section, header { scroll-margin-top: 72px; }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--page); color: var(--ink); font: 17px/1.6 Rubik, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -27,23 +30,29 @@
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
   .display { font-family: "Fugaz One", Rubik, sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: .01em; line-height: 1.02; text-wrap: balance; }
   .tag { display: inline-block; background: var(--orange-ink); color: var(--page); font-weight: 700; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; padding: 5px 12px; border-radius: 6px; }
-  .rule { width: 56px; height: 4px; background: var(--orange-ink); border-radius: 2px; margin: 18px 0 0; }
+  .rule { width: 56px; height: 4px; background: var(--orange-ink); border-radius: 2px; margin: 18px 0 0; transform-origin: left; }
   .muted { color: var(--muted); }
 
-  nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--page) 86%, transparent); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(245,247,248,.08); }
+  nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--page) 72%, transparent); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); border-bottom: 1px solid rgba(245,247,248,.06); transition: background .4s var(--ease), border-color .4s var(--ease), box-shadow .4s var(--ease); }
+  nav.scrolled { background: color-mix(in srgb, var(--page) 90%, transparent); border-bottom-color: rgba(245,247,248,.1); box-shadow: 0 10px 30px rgba(0,0,0,.25); }
   nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
   nav img { height: 24px; width: auto; }
   nav ul { list-style: none; display: flex; gap: 26px; margin: 0; padding: 0; font-size: 15px; }
+  nav ul a { position: relative; padding: 4px 0; transition: color .25s var(--ease); }
+  nav ul a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; border-radius: 2px; background: var(--orange-ink); transform: scaleX(0); transform-origin: left; transition: transform .35s var(--ease); }
   nav ul a:hover { color: var(--orange-ink); }
-  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 999px; font-weight: 700; font-size: 15px; transition: transform .15s ease, background .15s ease; }
-  .btn:hover { transform: translateY(-1px); }
-  .btn-orange { background: var(--orange); color: #fff; }
-  .btn-orange:hover { background: var(--orange-ink); }
+  nav ul a:hover::after { transform: scaleX(1); }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 999px; font-weight: 700; font-size: 15px; transition: transform .35s var(--ease-out), background .3s var(--ease), box-shadow .35s var(--ease); will-change: transform; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0) scale(.98); transition-duration: .1s; }
+  .btn-orange { background: var(--orange); color: #fff; box-shadow: 0 6px 18px rgba(211,114,0,.25); }
+  .btn-orange:hover { background: var(--orange-ink); box-shadow: 0 12px 32px rgba(211,114,0,.4); }
   .btn-dark { background: var(--card); color: var(--ink); border: 1px solid var(--rim); }
   .btn-dark:hover { border-color: var(--edge); }
   .btn svg { width: 18px; height: 18px; fill: currentColor; }
-  .badge { display: inline-flex; align-items: center; transition: transform .15s ease; }
-  .badge:hover { transform: translateY(-1px); }
+  .badge { display: inline-flex; align-items: center; border-radius: 10px; transition: transform .35s var(--ease-out), filter .3s var(--ease), box-shadow .35s var(--ease); }
+  .badge:hover { transform: translateY(-3px); filter: brightness(1.06); box-shadow: 0 14px 30px rgba(0,0,0,.35); }
+  .badge:active { transform: translateY(-1px) scale(.98); transition-duration: .1s; }
   .badge img { height: 50px; width: auto; }
   .stores { align-items: center; }
   .btn small { display: block; font-weight: 400; font-size: 11px; letter-spacing: .04em; opacity: .75; line-height: 1; margin-bottom: 3px; }
@@ -51,14 +60,19 @@
 
   .hero { padding: 72px 0 40px; position: relative; overflow: hidden; }
   .hero::before { content: ""; position: absolute; inset: auto -10% -45% -10%; height: 70%; background: var(--orange); transform: rotate(-3deg); border-radius: 48px; z-index: 0; }
-  .hero .wrap { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+  .hero::after { content: ""; position: absolute; width: 60vw; height: 60vw; max-width: 760px; max-height: 760px; right: -14vw; top: -22vw; background: radial-gradient(closest-side, rgba(232,150,58,.22), transparent 70%); z-index: 0; pointer-events: none; animation: breathe 9s ease-in-out infinite alternate; }
+  @keyframes breathe { from { opacity: .7; transform: scale(.94); } to { opacity: 1; transform: scale(1.06); } }
+  .hero .wrap { position: relative; z-index: 1; display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; perspective: 1400px; }
+  .hero h1 .line { display: block; overflow: hidden; padding-bottom: .06em; margin-bottom: -.06em; }
+  .hero h1 .line > span { display: block; }
   .hero h1 { font-size: clamp(42px, 6.2vw, 76px); margin: 18px 0 0; }
   .hero p.lead { font-size: 19px; margin: 22px 0 0; max-width: 34em; color: var(--muted); }
   .stores { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-  .fan { position: relative; height: 640px; }
-  .phone { background: #0B0E11; border-radius: 46px; padding: 11px; box-shadow: 0 30px 60px rgba(0,0,0,.45), 0 0 0 2px var(--rim); position: relative; }
+  .fan { position: relative; height: 640px; transform-style: preserve-3d; transition: transform .9s var(--ease-out); animation: drift 7s ease-in-out infinite alternate; }
+  @keyframes drift { from { translate: 0 -6px; } to { translate: 0 6px; } }
+  .phone { background: #0B0E11; border-radius: 46px; padding: 11px; box-shadow: 0 30px 60px rgba(0,0,0,.45), 0 0 0 2px var(--rim), 0 0 90px rgba(211,114,0,.10); position: relative; }
   .phone::after { content: ""; position: absolute; top: 20px; left: 50%; width: 30%; height: 24px; transform: translateX(-50%); background: #0B0E11; border-radius: 14px; }
-  .phone img { border-radius: 36px; width: 100%; height: auto; }
+  .phone img, .phone video { border-radius: 36px; width: 100%; height: auto; display: block; background: #fff; }
   .fan .phone { position: absolute; width: 270px; }
   .fan .p1 { left: 50%; top: 0; transform: translateX(-50%); z-index: 3; }
   .fan .p2 { left: 2%; top: 70px; transform: rotate(-7deg) scale(.86); z-index: 2; opacity: .96; }
@@ -72,21 +86,28 @@
   .feature ul { list-style: none; padding: 0; margin: 26px 0 0; display: grid; gap: 12px; }
   .feature li { display: flex; gap: 12px; align-items: flex-start; font-size: 17px; }
   .feature li::before { content: ""; flex: none; width: 22px; height: 22px; margin-top: 2px; border-radius: 50%; background: var(--orange-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23101519' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/14px no-repeat; }
-  .feature .shot { display: flex; justify-content: center; }
-  .feature .shot .phone { width: 300px; }
+  .feature .shot { display: flex; justify-content: center; perspective: 1200px; }
+  .feature .shot .phone { width: 300px; transition: transform .7s var(--ease-out), box-shadow .7s var(--ease); }
+  @media (hover: hover) and (pointer: fine) {
+    .feature .shot:hover .phone { transform: rotateY(-6deg) rotateX(3deg) translateY(-6px); box-shadow: 0 44px 80px rgba(0,0,0,.5), 0 0 0 2px var(--rim), 0 0 120px rgba(211,114,0,.18); }
+    .feature.flip .shot:hover .phone { transform: rotateY(6deg) rotateX(3deg) translateY(-6px); }
+  }
   .feature:nth-of-type(even) { background: linear-gradient(180deg, transparent, rgba(32,40,46,.55) 20%, rgba(32,40,46,.55) 80%, transparent); }
 
   .privacy { padding: 96px 0; }
   .privacy .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
   .privacy h2 { font-size: clamp(36px, 4.8vw, 60px); margin: 18px 0 0; }
   .cards { display: grid; gap: 14px; }
-  .card { background: var(--card); border: 1px solid var(--rim); border-radius: 18px; padding: 22px 24px; }
+  .card { background: var(--card); border: 1px solid var(--rim); border-radius: 18px; padding: 22px 24px; transition: transform .45s var(--ease-out), border-color .4s var(--ease), background .4s var(--ease), box-shadow .45s var(--ease); }
+  .card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--orange-ink) 55%, var(--rim)); background: var(--sunken); box-shadow: 0 18px 40px rgba(0,0,0,.3); }
   .card strong { display: block; font-size: 17px; margin-bottom: 6px; }
   .card span { color: var(--muted); font-size: 16px; }
 
   .cta { padding: 20px 0 96px; }
   .cta .panel { background: var(--orange); border-radius: 32px; padding: 56px 40px; display: grid; grid-template-columns: auto 1fr auto; gap: 32px; align-items: center; color: #fff; }
-  .cta .app-icon { width: 96px; height: 96px; border-radius: 24px; box-shadow: 0 12px 30px rgba(0,0,0,.3); }
+  .cta .panel { position: relative; overflow: hidden; }
+  .cta .panel::before { content: ""; position: absolute; inset: -40% -20%; background: radial-gradient(closest-side at 80% 20%, rgba(255,255,255,.18), transparent 70%); pointer-events: none; }
+  .cta .app-icon { width: 96px; height: 96px; border-radius: 24px; box-shadow: 0 12px 30px rgba(0,0,0,.3); animation: drift 6s ease-in-out infinite alternate; }
   .cta h2 { font-size: clamp(30px, 3.8vw, 44px); margin: 0; }
   .cta p { margin: 10px 0 0; opacity: .92; font-size: 17px; }
   .cta .btn-dark { background: var(--page); border-color: transparent; }
@@ -109,7 +130,17 @@
     .feature .shot .phone { width: 260px; }
     .cta .panel { grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 40px 24px; }
   }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn, .badge { transition: none; } }
+  .reveal { transition: opacity .9s var(--ease), transform .9s var(--ease-out); transition-delay: var(--d, 0s); will-change: opacity, transform; }
+  html.js .reveal:not(.in) { opacity: 0; transform: translateY(26px); }
+  html.js .reveal.rule:not(.in) { transform: scaleX(0); }
+  html.js .reveal.pop:not(.in) { transform: translateY(30px) scale(.96); }
+  html.js .hero h1 .line > span { transition: transform 1s var(--ease-out); transition-delay: var(--d, 0s); }
+  html.js .hero h1 .line > span:not(.in) { transform: translateY(112%); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    html.js .reveal:not(.in), html.js .hero h1 .line > span:not(.in) { opacity: 1; transform: none; }
+  }
 </style>
 </head>
 <body>
@@ -128,10 +159,10 @@
 
 <header class="hero">
   <div class="wrap">
-    <div>
-      <span class="tag">Workout planner for iPhone and Android</span>
-      <h1 class="display">Never guess<br>a workout again</h1>
-      <p class="lead">Trainr writes your week from your goal, your equipment and your days, bends it when life gets in the way, and builds next week from what you actually did. At home or at the gym. No account.</p>
+    <div class="copy">
+      <span class="tag">AI workout planner for iPhone and Android</span>
+      <h1 class="display"><span class="line"><span>Never guess</span></span><span class="line"><span>a workout again</span></span></h1>
+      <p class="lead">Trainr writes your week from your goal, your equipment and your days, bends it when life gets in the way, and builds next week from what you actually did. At home or at the gym. AI on your phone, not in the cloud. No account.</p>
       <div class="stores">
         <a class="badge" href="https://apps.apple.com/jp/app/trainr-workout-planner/id6809207852" aria-label="Download on the App Store"><img src="assets/badges/app-store.svg" alt="Download on the App Store" width="150" height="50"></a>
         <a class="badge" href="https://play.google.com/store/apps/details?id=com.jericx.trainr" aria-label="Get it on Google Play"><img src="assets/badges/google-play.png" alt="Get it on Google Play" width="169" height="50"></a>
@@ -160,25 +191,25 @@
           <li>Next week progresses from the sets you logged, not a template</li>
         </ul>
       </div>
-      <div class="shot"><div class="phone"><img src="assets/screens/plan.webp" alt="The weekly plan screen: three days with their focus, length, exercise count and equipment" width="660" height="1434" loading="lazy"></div></div>
+      <div class="shot"><div class="phone"><video autoplay muted loop playsinline preload="auto" width="660" height="1434" poster="assets/clips/plan-poster.webp" aria-label="The weekly plan screen: scrolling the week, then opening a session"><source src="assets/clips/plan.mp4" type="video/mp4"><img src="assets/screens/plan.webp" alt="The weekly plan screen: scrolling the week, then opening a session" width="660" height="1434" loading="lazy"></video></div></div>
     </div>
   </section>
 
   <section class="feature flip" id="adjust">
     <div class="wrap">
       <div class="copy">
-        <span class="tag">Less time. Sore knee. No bench.</span>
-        <h2 class="display">Bad day?<br>It bends.</h2>
+        <span class="tag">The AI in Trainr</span>
+        <h2 class="display">Bad day?<br>Tell the AI.</h2>
         <div class="rule"></div>
-        <p>Open Adjust today on any session and say what is going on. Trainr changes the workout, shows you the tradeoff, and applies it only when you say so.</p>
+        <p>Open Adjust today on any session and say what is going on: tap a reason, or type it in your own words. The AI in Trainr reads your note right on your phone, shows you what it understood, and changes the workout only when you say so.</p>
         <ul>
           <li>Less time: keeps the most relevant work and cuts the rest</li>
           <li>Equipment unavailable: finds a suitable alternative</li>
           <li>Something hurts: pauses and decides what to do next</li>
-          <li>Or say it in your own words, read by a small model on your phone</li>
+          <li>Or type it: on-device AI reads your note, and nothing leaves your phone</li>
         </ul>
       </div>
-      <div class="shot"><div class="phone"><img src="assets/screens/adjust.webp" alt="The Adjust today sheet asking what would help today, with five reasons to pick from" width="660" height="1434" loading="lazy"></div></div>
+      <div class="shot"><div class="phone"><video autoplay muted loop playsinline preload="auto" width="660" height="1434" poster="assets/clips/adjust-poster.webp" aria-label="Adjust today: typing a note, the AI on the phone reading it, and a shorter workout applied"><source src="assets/clips/adjust.mp4" type="video/mp4"><img src="assets/screens/adjust.webp" alt="Adjust today: typing a note, the AI on the phone reading it, and a shorter workout applied" width="660" height="1434" loading="lazy"></video></div></div>
     </div>
   </section>
 
@@ -195,7 +226,7 @@
           <li>Change your kit or your days any time and start a fresh plan</li>
         </ul>
       </div>
-      <div class="shot"><div class="phone"><img src="assets/screens/setup.webp" alt="The setup screen with a picture for each piece of equipment, dumbbell and barbell selected" width="660" height="1434" loading="lazy"></div></div>
+      <div class="shot"><div class="phone"><video autoplay muted loop playsinline preload="auto" width="660" height="1434" poster="assets/clips/setup-poster.webp" aria-label="Picking equipment and the weight unit on the setup screen"><source src="assets/clips/setup.mp4" type="video/mp4"><img src="assets/screens/setup.webp" alt="Picking equipment and the weight unit on the setup screen" width="660" height="1434" loading="lazy"></video></div></div>
     </div>
   </section>
 
@@ -213,7 +244,7 @@
           <li>Two clear ways to end: log the whole session, or save what you’ve done</li>
         </ul>
       </div>
-      <div class="shot"><div class="phone"><img src="assets/screens/day.webp" alt="A session screen with the Adjust today row and the first exercise ticked off" width="660" height="1434" loading="lazy"></div></div>
+      <div class="shot"><div class="phone"><video autoplay muted loop playsinline preload="auto" width="660" height="1434" poster="assets/clips/session-poster.webp" aria-label="Ticking off sets on a session screen"><source src="assets/clips/session.mp4" type="video/mp4"><img src="assets/screens/day.webp" alt="Ticking off sets on a session screen" width="660" height="1434" loading="lazy"></video></div></div>
     </div>
   </section>
 
@@ -230,13 +261,13 @@
           <li>Drag a session to another day when life gets in the way</li>
         </ul>
       </div>
-      <div class="shot"><div class="phone"><img src="assets/screens/progress.webp" alt="The weekly progress screen listing week one as in progress" width="660" height="1434" loading="lazy"></div></div>
+      <div class="shot"><div class="phone"><video autoplay muted loop playsinline preload="auto" width="660" height="1434" poster="assets/clips/progress-poster.webp" aria-label="Dragging a session to another day, then opening weekly progress and a finished week"><source src="assets/clips/progress.mp4" type="video/mp4"><img src="assets/screens/progress.webp" alt="Opening weekly progress and a finished week" width="660" height="1434" loading="lazy"></video></div></div>
     </div>
   </section>
 
   <section class="privacy" id="privacy">
     <div class="wrap">
-      <div>
+      <div class="copy">
         <span class="tag">Built on your phone. Stays on your phone.</span>
         <h2 class="display">No account.<br>No audience.</h2>
         <div class="rule"></div>
@@ -244,7 +275,7 @@
       </div>
       <div class="cards">
         <div class="card"><strong>Written on the device</strong><span>The week is built by the app itself, from an exercise catalogue that ships inside it. Nothing you answer is sent anywhere to write it.</span></div>
-        <div class="card"><strong>Read on the device</strong><span>The free-text Adjust today note is read by a small language model running on your phone. The note never leaves it.</span></div>
+        <div class="card"><strong>AI on the device</strong><span>The free-text Adjust today note is read by a language model running on your phone, not on a server. Your words never leave it.</span></div>
         <div class="card"><strong>Yours to delete</strong><span>Delete the app and the data goes with it. <a href="privacy-policy" style="color:var(--orange-ink)">Read the privacy policy →</a></span></div>
       </div>
     </div>
@@ -279,5 +310,64 @@
     <div>Plans are built by the app and are not medical advice.</div>
   </div>
 </footer>
+<script>
+(function () {
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  // Reveal: each block rises in once, children staggered 70 ms apart.
+  var groups = ['.hero .copy', '.feature .copy', '.privacy .copy', '.cards', '.cta .wrap'];
+  groups.forEach(function (sel) {
+    $$(sel).forEach(function (g) {
+      var kids = $$(':scope > *', g);
+      kids.forEach(function (el, i) { el.classList.add('reveal'); el.style.setProperty('--d', (i * 70) + 'ms'); });
+      $$('li', g).forEach(function (li, i) { li.classList.add('reveal'); li.style.setProperty('--d', (i * 80 + 160) + 'ms'); });
+    });
+  });
+  $$('.feature .shot .phone, .fan').forEach(function (el) { el.classList.add('reveal', 'pop'); el.style.setProperty('--d', '120ms'); });
+  $$('.hero h1 .line > span').forEach(function (el, i) { el.style.setProperty('--d', (i * 110) + 'ms'); });
+  var targets = $$('.reveal');
+  function show(el) { el.classList.add('in'); $$('.line > span', el).forEach(function (s) { s.classList.add('in'); }); }
+  if ('IntersectionObserver' in window && !reduce) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { show(e.target); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    targets.forEach(function (el) { io.observe(el); });
+  } else { targets.forEach(show); }
+
+  // Clips: play only while on screen, and start from the first frame every time they come in.
+  var clips = $$('.feature video');
+  if (reduce) {
+    clips.forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); v.controls = true; });
+  } else if ('IntersectionObserver' in window) {
+    var vo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var v = e.target;
+        if (e.isIntersecting) { try { v.currentTime = 0; } catch (_) {} var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+        else { v.pause(); }
+      });
+    }, { threshold: 0.35 });
+    clips.forEach(function (v) { v.removeAttribute('autoplay'); vo.observe(v); });
+  }
+
+  // Nav: a firmer bar once the page has moved.
+  var nav = document.querySelector('nav'), ticking = false;
+  function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 12); ticking = false; }
+  addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+
+  // Hero fan: a few degrees of tilt following the pointer, desktop only.
+  var hero = document.querySelector('.hero'), fan = document.querySelector('.fan');
+  if (fan && !reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    var raf = null;
+    hero.addEventListener('mousemove', function (ev) {
+      var r = hero.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width - 0.5, y = (ev.clientY - r.top) / r.height - 0.5;
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () { fan.style.transform = 'rotateY(' + (x * 7).toFixed(2) + 'deg) rotateX(' + (-y * 5).toFixed(2) + 'deg)'; });
+    });
+    hero.addEventListener('mouseleave', function () { fan.style.transform = ''; });
+  }
+})();
+</script>
 </body>
 </html>

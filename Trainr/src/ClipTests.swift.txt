@@ -1,0 +1,90 @@
+// Temporary: drives each feature slowly on the visible simulator while simctl records it.
+extension OnboardingFlowTests {
+    private func mark(_ name: String) { print("MARK \(name) \(Date().timeIntervalSince1970)") }
+    private func pause(_ s: Double) { Thread.sleep(forTimeInterval: s) }
+    private func clipLaunch(_ extra: [String]) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["-inMemoryStore", "-splashSeconds", "0"] + extra
+        app.launch(); return app
+    }
+    private func slowType(_ field: XCUIElement, _ text: String) {
+        for ch in text { field.typeText(String(ch)); pause(0.06) }
+    }
+
+    @MainActor
+    func testClipPlan() {
+        let app = clipLaunch(["-seedFixture", "midWeek"])
+        XCTAssertTrue(app.staticTexts["YOUR WEEKLY WORKOUT PLAN"].waitForExistence(timeout: 20)); mark("start"); pause(1.5)
+        app.swipeUp(velocity: .slow); pause(1.2); app.swipeDown(velocity: .slow); pause(1.0)
+        app.button(containing: "Cardio & Core").tap(); pause(2.2)
+        app.buttons["Back"].tap(); pause(1.5); mark("end")
+    }
+
+    @MainActor
+    func testClipSetup() {
+        let app = clipLaunch(["-startAtStep", "setup"])
+        XCTAssertTrue(app.buttons["Dumbbell"].waitForExistence(timeout: 20)); mark("start"); pause(1.2)
+        for name in ["Dumbbell", "Barbell", "Kettlebell"] { app.buttons[name].tap(); pause(0.9) }
+        pause(0.4); app.buttons["lbs"].tap(); pause(1.0); app.buttons["kg"].tap(); pause(0.8)
+        app.buttons["Barbell"].tap(); pause(1.4); mark("end")
+    }
+
+    @MainActor
+    func testClipSession() {
+        let app = clipLaunch(["-seedFixture", "midWeek"])
+        XCTAssertTrue(app.staticTexts["YOUR WEEKLY WORKOUT PLAN"].waitForExistence(timeout: 20))
+        app.buttons.matching(NSPredicate(format: "label CONTAINS 'TODAY'")).firstMatch.tap()
+        let ticks = app.ticks("Set complete", done: false)
+        XCTAssertTrue(ticks.firstMatch.waitForExistence(timeout: 20)); mark("start"); pause(1.2)
+        ticks.firstMatch.tap(); pause(1.1)
+        app.swipeUp(velocity: .slow); pause(0.8)
+        let next = app.ticks("Set complete", done: false)
+        if next.firstMatch.exists { next.firstMatch.tap(); pause(1.0) }
+        if next.firstMatch.exists { next.firstMatch.tap(); pause(1.0) }
+        app.swipeUp(velocity: .slow); pause(1.6); mark("end")
+    }
+
+    @MainActor
+    func testClipProgress() {
+        let app = clipLaunch(["-seedFixture", "twoWeeks"])
+        XCTAssertTrue(app.staticTexts["YOUR WEEKLY WORKOUT PLAN"].waitForExistence(timeout: 20)); mark("start"); pause(1.5)
+        let rows = app.buttons.matching(NSPredicate(format: "label CONTAINS 'mins'"))
+        XCTAssertTrue(rows.count >= 2, "rows: \(app.buttons.allElementsBoundByIndex.map(\.label))")
+        let last = rows.element(boundBy: rows.count - 1); let first = rows.element(boundBy: rows.count - 2)
+        last.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(forDuration: 1.2, thenDragTo: first.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)), withVelocity: .slow, thenHoldForDuration: 0.6)
+        pause(2.0)
+        app.buttons["Track Weekly Progress →"].tap()
+        XCTAssertTrue(app.staticTexts["WEEKLY PROGRESS"].waitForExistence(timeout: 10)); pause(1.8)
+        app.button(containing: "Week 1").tap(); pause(2.2)
+        app.buttons["Back"].tap(); pause(1.4); mark("end")
+    }
+
+    @MainActor
+    func testClipAdjust() {
+        let app = clipLaunch(["-seedFixture", "longDay", "-modelPath", HostModel.path])
+        XCTAssertTrue(app.staticTexts["YOUR WEEKLY WORKOUT PLAN"].waitForExistence(timeout: 20))
+        app.buttons.matching(NSPredicate(format: "label CONTAINS 'TODAY'")).firstMatch.tap()
+        let adjust = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Adjust today'")).firstMatch
+        XCTAssertTrue(adjust.waitForExistence(timeout: 20)); mark("start"); pause(1.2)
+        adjust.tap(); XCTAssertTrue(app.staticTexts["What would help today?"].waitForExistence(timeout: 5)); pause(1.6)
+        app.button(containing: "Something else").tap()
+        XCTAssertTrue(app.staticTexts["Tell us what you need"].waitForExistence(timeout: 5)); pause(0.8)
+        let field = app.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 3))
+        field.tap(); pause(0.4)
+        slowType(field, "Only have 15 minutes today, can we keep it short?"); pause(1.0)
+        mark("useNote"); app.buttons["USE MY NOTE"].tap()
+        XCTAssertTrue(app.staticTexts["How much time do you have?"].waitForExistence(timeout: 540)); mark("read"); pause(2.4)
+        let show = app.buttons["SHOW RECOMMENDATION"]
+        if !show.isEnabled {
+            app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'min'")).firstMatch.tap(); pause(1.2)
+        }
+        if !show.isHittable { app.swipeUp(velocity: .slow); pause(0.6) }
+        XCTAssertTrue(show.isEnabled, "still disabled; buttons: \(app.buttons.allElementsBoundByIndex.map(\.label))")
+        show.tap()
+        XCTAssertTrue(app.staticTexts["A shorter workout for today"].waitForExistence(timeout: 10)); pause(2.6)
+        app.swipeUp(velocity: .slow); pause(1.0)
+        app.buttons["USE THIS WORKOUT"].tap()
+        XCTAssertTrue(app.staticTexts["Adjusted for today"].waitForExistence(timeout: 10)); pause(2.2); mark("end")
+    }
+}
